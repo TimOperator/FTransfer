@@ -31,40 +31,61 @@ public class MainFrame extends javax.swing.JFrame {
 
         ipAddressField = new javax.swing.JTextField();
         connectButton = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
+        addressLabel = new javax.swing.JLabel();
+        portLabel = new javax.swing.JLabel();
+        portField = new javax.swing.JTextField();
+        statusCaptionLabel = new javax.swing.JLabel();
+        statusLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("de/hamp_it/ftransfer/resources/strings"); // NOI18N
         connectButton.setText(bundle.getString("caption_connect")); // NOI18N
 
-        jLabel1.setText(bundle.getString("caption_address")); // NOI18N
+        addressLabel.setText(bundle.getString("caption_address")); // NOI18N
+
+        portLabel.setText(bundle.getString("caption_port")); // NOI18N
+
+        statusCaptionLabel.setText(bundle.getString("caption_status")); // NOI18N
+
+        statusLabel.setText(bundle.getString("status_not_connected")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(121, 121, 121)
-                .addComponent(jLabel1)
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(addressLabel)
+                    .addComponent(portLabel)
+                    .addComponent(statusCaptionLabel))
                 .addGap(18, 18, 18)
-                .addComponent(ipAddressField, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(352, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(portField)
+                    .addComponent(ipAddressField, javax.swing.GroupLayout.DEFAULT_SIZE, 109, Short.MAX_VALUE)
+                    .addComponent(statusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
                 .addComponent(connectButton)
-                .addGap(163, 163, 163))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(85, 85, 85)
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(ipAddressField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel1))
-                .addGap(49, 49, 49)
-                .addComponent(connectButton)
-                .addContainerGap(217, Short.MAX_VALUE))
+                    .addComponent(addressLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(portLabel)
+                    .addComponent(portField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(connectButton))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(statusCaptionLabel)
+                    .addComponent(statusLabel))
+                .addContainerGap(302, Short.MAX_VALUE))
         );
 
         pack();
@@ -106,8 +127,12 @@ public class MainFrame extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel addressLabel;
     private javax.swing.JButton connectButton;
     private javax.swing.JTextField ipAddressField;
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JTextField portField;
+    private javax.swing.JLabel portLabel;
+    private javax.swing.JLabel statusCaptionLabel;
+    private javax.swing.JLabel statusLabel;
     // End of variables declaration//GEN-END:variables
 }
