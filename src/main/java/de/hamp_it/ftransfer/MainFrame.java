@@ -5,7 +5,12 @@
  */
 package de.hamp_it.ftransfer;
 
-import de.hamp_it.ftransfer.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.net.Socket;
+import java.util.ResourceBundle;
 
 /**
  *
@@ -13,6 +18,12 @@ import de.hamp_it.ftransfer.*;
  */
 public class MainFrame extends javax.swing.JFrame {
 
+    private boolean connected = false;
+    private ResourceBundle strings;
+    private Socket clientSocket;
+    private DataOutputStream dataOut;
+    private DataInputStream dataIn;
+    
     /**
      * Creates new form MainFrame
      */
@@ -29,26 +40,123 @@ public class MainFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        ipAddressField = new javax.swing.JTextField();
+        addressField = new javax.swing.JTextField();
         connectButton = new javax.swing.JButton();
         addressLabel = new javax.swing.JLabel();
         portLabel = new javax.swing.JLabel();
         portField = new javax.swing.JTextField();
         statusCaptionLabel = new javax.swing.JLabel();
         statusLabel = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        sendFileButton = new javax.swing.JButton();
+        sendMessageButton = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        messageTextArea = new javax.swing.JTextArea();
+        jProgressBar1 = new javax.swing.JProgressBar();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        infoTextArea = new javax.swing.JTextArea();
+        protocolLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
+        addressField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                addressFieldKeyReleased(evt);
+            }
+        });
+
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("strings"); // NOI18N
         connectButton.setText(bundle.getString("caption_connect")); // NOI18N
+        connectButton.setEnabled(false);
+        connectButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                connectButtonActionPerformed(evt);
+            }
+        });
 
         addressLabel.setText(bundle.getString("caption_address")); // NOI18N
 
         portLabel.setText(bundle.getString("caption_port")); // NOI18N
 
+        portField.setText("50471");
+        portField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                portFieldKeyReleased(evt);
+            }
+        });
+
         statusCaptionLabel.setText(bundle.getString("caption_status")); // NOI18N
 
         statusLabel.setText(bundle.getString("status_not_connected")); // NOI18N
+
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(bundle.getString("caption_actions"))); // NOI18N
+
+        sendFileButton.setText(bundle.getString("button_send_file")); // NOI18N
+        sendFileButton.setEnabled(false);
+        sendFileButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sendFileButtonActionPerformed(evt);
+            }
+        });
+
+        sendMessageButton.setText(bundle.getString("button_send_message")); // NOI18N
+        sendMessageButton.setEnabled(false);
+        sendMessageButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sendMessageButtonActionPerformed(evt);
+            }
+        });
+
+        messageTextArea.setEditable(false);
+        messageTextArea.setColumns(20);
+        messageTextArea.setRows(5);
+        messageTextArea.setEnabled(false);
+        jScrollPane1.setViewportView(messageTextArea);
+
+        infoTextArea.setEditable(false);
+        infoTextArea.setColumns(20);
+        infoTextArea.setRows(5);
+        infoTextArea.setEnabled(false);
+        jScrollPane2.setViewportView(infoTextArea);
+
+        protocolLabel.setText(bundle.getString("caption_protocol")); // NOI18N
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 259, Short.MAX_VALUE)
+                    .addComponent(jProgressBar1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(sendFileButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(sendMessageButton))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(protocolLabel)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING))
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(sendMessageButton)
+                    .addComponent(sendFileButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(protocolLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 111, Short.MAX_VALUE)
+                .addContainerGap())
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -57,24 +165,27 @@ public class MainFrame extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(addressLabel)
-                    .addComponent(portLabel)
-                    .addComponent(statusCaptionLabel))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(portField)
-                    .addComponent(ipAddressField)
-                    .addComponent(statusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(18, 18, 18)
-                .addComponent(connectButton)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(addressLabel)
+                            .addComponent(portLabel)
+                            .addComponent(statusCaptionLabel))
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(addressField)
+                            .addComponent(statusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(portField))
+                        .addGap(18, 18, 18)
+                        .addComponent(connectButton)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(ipAddressField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(addressField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(addressLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -85,11 +196,88 @@ public class MainFrame extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(statusCaptionLabel)
                     .addComponent(statusLabel))
-                .addContainerGap(302, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void connectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectButtonActionPerformed
+        if (connected) {
+            // Disconnect
+            try {    
+                dataOut.writeUTF("disconnect");
+                clientSocket.close();
+            } catch (IOException ex) {
+                //
+            }
+            
+            connectButton.setText("Connect");
+            setConnectionEnabled(true);
+            setActionsEditable(false);
+            connected = false;
+        } else {
+            // Connect
+            String address = addressField.getText().trim();
+            Integer port = new Integer(portField.getText().trim());
+            
+            try {
+                clientSocket = new Socket(address, port);
+                dataOut = new DataOutputStream(clientSocket.getOutputStream());
+                dataIn = new DataInputStream(clientSocket.getInputStream());
+                String status = dataIn.readUTF();
+                if (!status.equals("y")) throw new IOException("Verbindungsfehler oder Empfänger hat abgelehnt.");
+                statusLabel.setText("Verbunden!");
+                infoTextArea.append("Connected to " + address + ":" + port.toString() + "\n");
+            } catch (IOException ex) {
+                statusLabel.setText("Fehler!");
+                return;
+            }
+            connectButton.setText("Disconnect");
+            setConnectionEnabled(false);
+            setActionsEditable(true);
+            connected = true;
+        }
+        
+    }//GEN-LAST:event_connectButtonActionPerformed
+
+    private void addressFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_addressFieldKeyReleased
+        if (addressField.getText().trim().length() > 0 && portField.getText().trim().length() > 0) {
+            connectButton.setEnabled(true);
+        } else {
+            connectButton.setEnabled(false);
+        }
+    }//GEN-LAST:event_addressFieldKeyReleased
+
+    private void portFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_portFieldKeyReleased
+        if (addressField.getText().trim().length() > 0 && portField.getText().trim().length() > 0) {
+            connectButton.setEnabled(true);
+        } else {
+            connectButton.setEnabled(false);
+        }
+    }//GEN-LAST:event_portFieldKeyReleased
+
+    private void sendMessageButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendMessageButtonActionPerformed
+        String message = messageTextArea.getText();
+        try {
+            dataOut.writeUTF("msg:" + message);
+            String response = dataIn.readUTF();
+            if (response.equals("y")) {
+                infoTextArea.append("Nachricht gesendet:" + message + "\n");
+                messageTextArea.setText("");
+            } else {
+                throw new IOException("Server sends unkown answer");
+            }
+        } catch (IOException ex) {
+            infoTextArea.append("Fehler beim Übertragen der Nachricht: " + message.substring(0, 5) + "...\n");
+        }
+    }//GEN-LAST:event_sendMessageButtonActionPerformed
+
+    private void sendFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendFileButtonActionPerformed
+        File file;
+    }//GEN-LAST:event_sendFileButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -107,32 +295,48 @@ public class MainFrame extends javax.swing.JFrame {
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(MainFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(MainFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(MainFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(MainFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
+        
+        //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new MainFrame().setVisible(true);
-            }
+        java.awt.EventQueue.invokeLater(() -> {
+            new MainFrame().setVisible(true);
         });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField addressField;
     private javax.swing.JLabel addressLabel;
     private javax.swing.JButton connectButton;
-    private javax.swing.JTextField ipAddressField;
+    private javax.swing.JTextArea infoTextArea;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JProgressBar jProgressBar1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTextArea messageTextArea;
     private javax.swing.JTextField portField;
     private javax.swing.JLabel portLabel;
+    private javax.swing.JLabel protocolLabel;
+    private javax.swing.JButton sendFileButton;
+    private javax.swing.JButton sendMessageButton;
     private javax.swing.JLabel statusCaptionLabel;
     private javax.swing.JLabel statusLabel;
     // End of variables declaration//GEN-END:variables
+
+    private void setConnectionEnabled(boolean value) {
+        addressField.setEditable(value);
+        portField.setEditable(value);
+    }
+    
+    private void setActionsEditable(boolean value) {
+        sendFileButton.setEnabled(value);
+        sendMessageButton.setEnabled(value);
+        messageTextArea.setEditable(value);
+        messageTextArea.setEnabled(value);
+        infoTextArea.setEnabled(value);
+    }
 }
