@@ -39,7 +39,7 @@ public class MainFrame extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("de/hamp_it/ftransfer/resources/strings"); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("strings"); // NOI18N
         connectButton.setText(bundle.getString("caption_connect")); // NOI18N
 
         addressLabel.setText(bundle.getString("caption_address")); // NOI18N
@@ -63,7 +63,7 @@ public class MainFrame extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(portField)
-                    .addComponent(ipAddressField, javax.swing.GroupLayout.DEFAULT_SIZE, 109, Short.MAX_VALUE)
+                    .addComponent(ipAddressField)
                     .addComponent(statusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(18, 18, 18)
                 .addComponent(connectButton)
