@@ -8,9 +8,11 @@ package de.hamp_it.ftransfer;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ResourceBundle;
+import javax.swing.JFileChooser;
 
 /**
  *
@@ -58,6 +60,7 @@ public class MainFrame extends javax.swing.JFrame {
         protocolLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("FTransfer");
 
         addressField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
@@ -272,11 +275,49 @@ public class MainFrame extends javax.swing.JFrame {
             }
         } catch (IOException ex) {
             infoTextArea.append("Fehler beim Übertragen der Nachricht: " + message.substring(0, 5) + "...\n");
+            System.out.println(ex.toString());
         }
     }//GEN-LAST:event_sendMessageButtonActionPerformed
 
     private void sendFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendFileButtonActionPerformed
-        File file;
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setMultiSelectionEnabled(false);
+        int val = fileChooser.showDialog(null, "Senden");
+        if (val != JFileChooser.APPROVE_OPTION) {
+            System.out.println("Auswahl abgebrochen.");
+            return;
+        }
+        File file = fileChooser.getSelectedFile();
+        System.out.println("Datei ausgewählt: " + file.getName());
+        try {
+            dataOut.writeUTF("file:" + file.getName());
+            String response = dataIn.readUTF();
+            if (response.equals("y")) {
+                infoTextArea.append("Kodiere Datei " + file.getName() + "\n");
+                byte[] fileArray = writeFileToBytes(file);
+                int length = fileArray.length;
+                if (length <= 0) {
+                    infoTextArea.append("Dateifehler!");
+                    return;
+                }
+                dataOut.writeInt(length);
+                infoTextArea.append("Sende Datei (" + length + "): " + file.getName() + "\n");
+                dataOut.write(fileArray);
+                response = dataIn.readUTF();
+                if (response.equals("y")) {
+                    infoTextArea.append("Datei erfolgreich übertragen.\n");
+                } else {
+                    infoTextArea.append("Fehler bei Übertragung.\n");
+                }
+            } else {
+                throw new IOException("Server send unkown answer or user declined");
+            }
+            
+        } catch (IOException ex) {
+            infoTextArea.append("Fehler beim Übertragen der Datei " + file.getName() + "\n");
+            System.out.println(ex.toString());
+        }
+        
     }//GEN-LAST:event_sendFileButtonActionPerformed
 
     /**
@@ -327,16 +368,39 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JLabel statusLabel;
     // End of variables declaration//GEN-END:variables
 
+    /**
+     * Set the connection fields
+     * @param value True for enable, false to disable
+     */
     private void setConnectionEnabled(boolean value) {
         addressField.setEditable(value);
         portField.setEditable(value);
     }
     
+    /**
+     * Set the action fields
+     * @param value True for enable, false to disable
+     */
     private void setActionsEditable(boolean value) {
         sendFileButton.setEnabled(value);
         sendMessageButton.setEnabled(value);
         messageTextArea.setEditable(value);
         messageTextArea.setEnabled(value);
         infoTextArea.setEnabled(value);
+    }
+    
+    /**
+     * Converts a file to byte array to send over the network
+     * @param file File to convert
+     * @return Byte array of file
+     */
+    private static byte[] writeFileToBytes(File file) throws IOException {
+         byte[] fileArray = new byte[(int) file.length()];
+        
+        try (FileInputStream fis = new FileInputStream(file)) {
+            fis.read(fileArray);
+        }
+        
+        return fileArray;
     }
 }
