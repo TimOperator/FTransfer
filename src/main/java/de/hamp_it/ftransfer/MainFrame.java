@@ -303,14 +303,21 @@ public class MainFrame extends javax.swing.JFrame {
         }
         File file = fileChooser.getSelectedFile();
         long fileSize = file.length();
+        String fileName = file.getName();
         
-        System.out.println(message_bundle.getString("file_selected") + ": " + file.getName() + " (" + fileSize + " " + message_bundle.getString("file_bytes") + ")");
+        System.out.println(message_bundle.getString("file_selected") + ": " + fileName + " (" + fileSize + " " + message_bundle.getString("file_bytes") + ")");
         if (fileSize > 1000000000) {
-            JOptionPane.showMessageDialog(null, message_bundle.getString("file_sive_overload"));
+            JOptionPane.showMessageDialog(null, message_bundle.getString("file_size_overload") + " " + fileSize + " " + message_bundle.getString("file_bytes"));
+            System.out.println(message_bundle.getString("file_size_overload") + " " + fileSize + " " + message_bundle.getString("file_bytes"));
             return;
         }
         
         // TODO check file type
+        if (!fileName.endsWith(".txt")) {
+            System.out.println(message_bundle.getString("file_unsupported_format"));
+            JOptionPane.showMessageDialog(null, message_bundle.getString("file_unsupported_format"));
+            return;
+        }
         
         try {
             dataOut.writeUTF("file:" + file.getName());
