@@ -7,6 +7,7 @@ package de.hamp_it.ftransfer;
 
 import java.io.IOException;
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 /**
  *
@@ -35,7 +36,7 @@ public class Client {
         // Set look and feel
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
             //Doesn't matter
         }
         mainFrame = new MainFrame();

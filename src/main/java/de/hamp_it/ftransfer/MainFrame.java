@@ -11,8 +11,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketException;
+import java.util.Locale;
 import java.util.ResourceBundle;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -25,12 +28,16 @@ public class MainFrame extends javax.swing.JFrame {
     private Socket clientSocket;
     private DataOutputStream dataOut;
     private DataInputStream dataIn;
+    private final ResourceBundle message_bundle;
+    private final ResourceBundle string_bundle;
     
     /**
      * Creates new form MainFrame
      */
     public MainFrame() {
         initComponents();
+        message_bundle = ResourceBundle.getBundle("messages", Locale.getDefault());
+        string_bundle = ResourceBundle.getBundle("strings", Locale.getDefault());
     }
 
     /**
@@ -114,6 +121,11 @@ public class MainFrame extends javax.swing.JFrame {
         messageTextArea.setColumns(20);
         messageTextArea.setRows(5);
         messageTextArea.setEnabled(false);
+        messageTextArea.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                messageTextAreaKeyReleased(evt);
+            }
+        });
         jScrollPane1.setViewportView(messageTextArea);
 
         infoTextArea.setEditable(false);
@@ -210,14 +222,14 @@ public class MainFrame extends javax.swing.JFrame {
     private void connectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectButtonActionPerformed
         if (connected) {
             // Disconnect
-            try {    
+            try {
                 dataOut.writeUTF("disconnect");
                 clientSocket.close();
             } catch (IOException ex) {
                 //
             }
             
-            connectButton.setText("Connect");
+            connectButton.setText(string_bundle.getString("caption_connect"));
             setConnectionEnabled(true);
             setActionsEditable(false);
             connected = false;
@@ -230,15 +242,16 @@ public class MainFrame extends javax.swing.JFrame {
                 clientSocket = new Socket(address, port);
                 dataOut = new DataOutputStream(clientSocket.getOutputStream());
                 dataIn = new DataInputStream(clientSocket.getInputStream());
-                String status = dataIn.readUTF();
-                if (!status.equals("y")) throw new IOException("Verbindungsfehler oder Empfänger hat abgelehnt.");
-                statusLabel.setText("Verbunden!");
-                infoTextArea.append("Connected to " + address + ":" + port.toString() + "\n");
+                boolean accept = dataIn.readBoolean();
+                if (!accept) throw new IOException(message_bundle.getString("connection_error_or_refused"));
+                statusLabel.setText(message_bundle.getString("connection_connected"));
+                infoTextArea.append(message_bundle.getString("connection_connected_to") + " " + address + ":" + port.toString() + "\n");
+                System.out.println(message_bundle.getString("connection_connected_to") + " " + address + ":" + port.toString());
             } catch (IOException ex) {
-                statusLabel.setText("Fehler!");
+                statusLabel.setText(message_bundle.getString("connection_error"));
                 return;
             }
-            connectButton.setText("Disconnect");
+            connectButton.setText(string_bundle.getString("caption_disconnect"));
             setConnectionEnabled(false);
             setActionsEditable(true);
             connected = true;
@@ -266,15 +279,16 @@ public class MainFrame extends javax.swing.JFrame {
         String message = messageTextArea.getText();
         try {
             dataOut.writeUTF("msg:" + message);
-            String response = dataIn.readUTF();
-            if (response.equals("y")) {
-                infoTextArea.append("Nachricht gesendet:" + message + "\n");
+            boolean accept = dataIn.readBoolean();
+            if (accept) {
+                infoTextArea.append(message_bundle.getString("message_send_ok") + " " + message + "\n");
                 messageTextArea.setText("");
+                sendMessageButton.setEnabled(false);
             } else {
-                throw new IOException("Server sends unkown answer");
+                throw new IOException(message_bundle.getString("message_unkown_answer"));
             }
         } catch (IOException ex) {
-            infoTextArea.append("Fehler beim Übertragen der Nachricht: " + message.substring(0, 5) + "...\n");
+            infoTextArea.append(message_bundle.getString("message_send_error") + " " + message.substring(0, 5) + "...\n");
             System.out.println(ex.toString());
         }
     }//GEN-LAST:event_sendMessageButtonActionPerformed
@@ -282,43 +296,76 @@ public class MainFrame extends javax.swing.JFrame {
     private void sendFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendFileButtonActionPerformed
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setMultiSelectionEnabled(false);
-        int val = fileChooser.showDialog(null, "Senden");
+        int val = fileChooser.showDialog(null, string_bundle.getString("caption_send"));
         if (val != JFileChooser.APPROVE_OPTION) {
-            System.out.println("Auswahl abgebrochen.");
+            System.out.println(message_bundle.getString("file_selection_aborted"));
             return;
         }
         File file = fileChooser.getSelectedFile();
-        System.out.println("Datei ausgewählt: " + file.getName());
+        long fileSize = file.length();
+        
+        System.out.println(message_bundle.getString("file_selected") + ": " + file.getName() + " (" + fileSize + " " + message_bundle.getString("file_bytes") + ")");
+        if (fileSize > 1000000000) {
+            JOptionPane.showMessageDialog(null, message_bundle.getString("file_sive_overload"));
+            return;
+        }
+        
+        // TODO check file type
+        
         try {
             dataOut.writeUTF("file:" + file.getName());
-            String response = dataIn.readUTF();
-            if (response.equals("y")) {
-                infoTextArea.append("Kodiere Datei " + file.getName() + "\n");
+            dataOut.writeLong(fileSize);
+            boolean accept = dataIn.readBoolean();
+            if (accept) {
+                System.out.println(message_bundle.getString("file_accepted"));
+                infoTextArea.append(message_bundle.getString("file_file") + ": " + file.getName() + "\n");
+                infoTextArea.append(message_bundle.getString("file_coding") + "\n");
                 byte[] fileArray = writeFileToBytes(file);
                 int length = fileArray.length;
                 if (length <= 0) {
-                    infoTextArea.append("Dateifehler!");
+                    infoTextArea.append(message_bundle.getString("file_broken"));
                     return;
                 }
                 dataOut.writeInt(length);
-                infoTextArea.append("Sende Datei (" + length + "): " + file.getName() + "\n");
+                System.out.println(message_bundle.getString("file_sending"));
+                infoTextArea.append(message_bundle.getString("file_sending") + " (" + length + " " + message_bundle.getString("file_bytes") + ")\n");
                 dataOut.write(fileArray);
-                response = dataIn.readUTF();
-                if (response.equals("y")) {
-                    infoTextArea.append("Datei erfolgreich übertragen.\n");
+                System.out.println(message_bundle.getString("file_send_wait_for_answer"));
+                Boolean success = dataIn.readBoolean();
+                if (success) {
+                    infoTextArea.append(message_bundle.getString("file_send_success") + "\n");
+                    System.out.println(message_bundle.getString("file_send_success"));
                 } else {
-                    infoTextArea.append("Fehler bei Übertragung.\n");
+                    infoTextArea.append(message_bundle.getString("file_send_error") + "\n");
+                    System.out.println(message_bundle.getString("file_send_error"));
                 }
             } else {
-                throw new IOException("Server send unkown answer or user declined");
+                throw new IOException(message_bundle.getString("file_unkown_answer"));
+            }
+            
+        } catch (SocketException ex) {
+            infoTextArea.append(message_bundle.getString("file_send_error") + "\n");
+            System.out.println(ex.toString());
+            try {
+                clientSocket.close();
+            } catch (IOException es) {
+                //
             }
             
         } catch (IOException ex) {
-            infoTextArea.append("Fehler beim Übertragen der Datei " + file.getName() + "\n");
+            infoTextArea.append(message_bundle.getString("file_send_error") + "\n");
             System.out.println(ex.toString());
         }
         
     }//GEN-LAST:event_sendFileButtonActionPerformed
+
+    private void messageTextAreaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_messageTextAreaKeyReleased
+        if (messageTextArea.getText().trim().length() <= 0) {
+            sendMessageButton.setEnabled(false);
+        } else {
+            sendMessageButton.setEnabled(true);
+        }
+    }//GEN-LAST:event_messageTextAreaKeyReleased
 
     /**
      * @param args the command line arguments
@@ -383,7 +430,11 @@ public class MainFrame extends javax.swing.JFrame {
      */
     private void setActionsEditable(boolean value) {
         sendFileButton.setEnabled(value);
-        sendMessageButton.setEnabled(value);
+        if (messageTextArea.getText().trim().length() > 0 && value) {
+            sendMessageButton.setEnabled(true);
+        } else {
+            sendMessageButton.setEnabled(false);
+        }
         messageTextArea.setEditable(value);
         messageTextArea.setEnabled(value);
         infoTextArea.setEnabled(value);
@@ -395,11 +446,11 @@ public class MainFrame extends javax.swing.JFrame {
      * @return Byte array of file
      */
     private static byte[] writeFileToBytes(File file) throws IOException {
-         byte[] fileArray = new byte[(int) file.length()];
+        byte[] fileArray = new byte[(int) file.length()];
         
-        try (FileInputStream fis = new FileInputStream(file)) {
-            fis.read(fileArray);
-        }
+        FileInputStream fis = new FileInputStream(file);
+        fis.read(fileArray);
+        fis.close();
         
         return fileArray;
     }
